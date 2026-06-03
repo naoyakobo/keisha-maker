@@ -247,13 +247,13 @@
     }
 
     .table-wrap {
-      overflow-x: auto;
+      overflow-x: visible;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 680px;
+      table-layout: fixed;
     }
 
     th,
@@ -285,7 +285,29 @@
     }
 
     td.name {
-      min-width: 120px;
+      width: 24%;
+    }
+
+    .member-box th:nth-child(1) {
+      width: 24%;
+    }
+
+    .member-box th:nth-child(2) {
+      width: 26%;
+    }
+
+    .member-box th:nth-child(3) {
+      width: 13%;
+      text-align: center;
+    }
+
+    .member-box th:nth-child(4) {
+      width: 22%;
+    }
+
+    .member-box th:nth-child(5) {
+      width: 15%;
+      text-align: center;
     }
 
     .check {
@@ -323,11 +345,15 @@
     .table-footer {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 10px;
       padding: 14px;
       flex-wrap: wrap;
       background: var(--panel-soft);
+    }
+
+    .table-footer .pill {
+      margin-left: auto;
     }
 
     .result {
@@ -515,8 +541,94 @@
         gap: 10px;
       }
 
-      table {
-        min-width: 640px;
+      .table-wrap {
+        overflow-x: visible;
+      }
+
+      .member-box table,
+      .member-box thead,
+      .member-box tbody,
+      .member-box tr,
+      .member-box th,
+      .member-box td {
+        display: block;
+        width: 100%;
+      }
+
+      .member-box table {
+        table-layout: auto;
+      }
+
+      .member-box thead {
+        display: none;
+      }
+
+      .member-box tbody {
+        display: grid;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .member-box tbody tr {
+        display: grid;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .member-box tbody tr:hover {
+        background: #fff;
+      }
+
+      .member-box td {
+        border-bottom: 0;
+        padding: 0;
+      }
+
+      .member-box td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .member-box td[data-label="遅参加"] {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 40px;
+      }
+
+      .member-box td[data-label="遅参加"]::before {
+        margin-bottom: 0;
+      }
+
+      .member-box td[data-label="削除"]::before {
+        display: none;
+      }
+
+      .member-box td[data-label="削除"] {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .member-box .check {
+        justify-content: flex-end;
+      }
+
+      .table-footer {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .table-footer .pill {
+        margin-left: 0;
+        justify-content: center;
       }
 
       .settings,
@@ -629,7 +741,8 @@
           </div>
           <div class="table-footer">
             <button class="secondary" id="addMember" type="button">メンバ追加</button>
-            <button class="secondary" id="saveInputs" type="button">送金先・メンバ保存</button>
+            <button class="secondary" id="saveTransfer" type="button">送金先保存</button>
+            <button class="secondary" id="saveMembers" type="button">メンバ保存</button>
             <span class="pill" id="calcStatus">計算済み</span>
           </div>
         </section>
@@ -729,17 +842,35 @@
       }
     }
 
-    function saveInputs(button) {
-      const payload = {
-        transferTo: el.transferTo.value,
-        members: state.members
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    function readSavedInputs() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function writeSavedInputs(nextValues) {
+      const current = readSavedInputs();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...nextValues }));
+    }
+
+    function showSaved(button) {
       const original = button.textContent;
       button.textContent = "保存済み";
       setTimeout(() => {
         button.textContent = original;
       }, 1200);
+    }
+
+    function saveTransfer(button) {
+      writeSavedInputs({ transferTo: el.transferTo.value });
+      showSaved(button);
+    }
+
+    function saveMembers(button) {
+      writeSavedInputs({ members: state.members });
+      showSaved(button);
     }
 
     function formatYen(value) {
@@ -826,15 +957,15 @@
       state.members.forEach((member, index) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="name"><input data-field="name" data-index="${index}" type="text" value="${member.name}"></td>
-          <td>
+          <td class="name" data-label="メンバ"><input data-field="name" data-index="${index}" type="text" value="${member.name}"></td>
+          <td data-label="役職">
             <select data-field="role" data-index="${index}">
               ${roles.map((role) => `<option value="${role}" ${role === member.role ? "selected" : ""}>${role}</option>`).join("")}
             </select>
           </td>
-          <td><label class="check"><input data-field="late" data-index="${index}" type="checkbox" ${member.late ? "checked" : ""}></label></td>
-          <td><input data-field="fixed" data-index="${index}" type="number" min="0" step="1" value="${member.fixed}" placeholder="自動"></td>
-          <td><button class="icon-btn" data-remove="${index}" type="button" title="削除" aria-label="削除">×</button></td>
+          <td data-label="遅参加"><label class="check"><input data-field="late" data-index="${index}" type="checkbox" ${member.late ? "checked" : ""}></label></td>
+          <td data-label="固定金額"><input data-field="fixed" data-index="${index}" type="number" min="0" step="1" value="${member.fixed}" placeholder="自動"></td>
+          <td data-label="削除"><button class="icon-btn" data-remove="${index}" type="button" title="削除" aria-label="削除">×</button></td>
         `;
         el.memberRows.appendChild(tr);
       });
@@ -923,8 +1054,12 @@
       renderRows();
     });
 
-    document.querySelector("#saveInputs").addEventListener("click", (event) => {
-      saveInputs(event.currentTarget);
+    document.querySelector("#saveTransfer").addEventListener("click", (event) => {
+      saveTransfer(event.currentTarget);
+    });
+
+    document.querySelector("#saveMembers").addEventListener("click", (event) => {
+      saveMembers(event.currentTarget);
     });
 
     document.querySelector("#copyAmounts").addEventListener("click", (event) => {
@@ -944,7 +1079,7 @@
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js?v=4").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=5").catch(() => {});
       });
     }
   </script>
