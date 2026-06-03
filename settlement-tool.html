@@ -558,7 +558,7 @@
         </section>
 
         <details class="advanced">
-          <summary>詳細設定はこちら</summary>
+          <summary>詳細に設定する</summary>
           <div class="advanced-body">
             <div class="advanced-controls">
               <label>
@@ -629,6 +629,7 @@
           </div>
           <div class="table-footer">
             <button class="secondary" id="addMember" type="button">メンバ追加</button>
+            <button class="secondary" id="saveInputs" type="button">送金先・メンバ保存</button>
             <span class="pill" id="calcStatus">計算済み</span>
           </div>
         </section>
@@ -687,6 +688,7 @@
       { name: "", role: "勤務", late: false, fixed: "" }
     ];
 
+    const STORAGE_KEY = "keisha-maker-inputs-v1";
     const yen = new Intl.NumberFormat("ja-JP");
     const state = {
       members: structuredClone(defaultMembers)
@@ -707,6 +709,38 @@
       diffMetric: document.querySelector("#diffMetric"),
       calcStatus: document.querySelector("#calcStatus")
     };
+
+    function loadSavedInputs() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        if (typeof saved.transferTo === "string") {
+          el.transferTo.value = saved.transferTo;
+        }
+        if (Array.isArray(saved.members) && saved.members.length) {
+          state.members = saved.members.map((member) => ({
+            name: String(member.name || ""),
+            role: roles.includes(member.role) ? member.role : "勤務",
+            late: Boolean(member.late),
+            fixed: member.fixed === undefined || member.fixed === null ? "" : String(member.fixed)
+          }));
+        }
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    function saveInputs(button) {
+      const payload = {
+        transferTo: el.transferTo.value,
+        members: state.members
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      const original = button.textContent;
+      button.textContent = "保存済み";
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1200);
+    }
 
     function formatYen(value) {
       return `${yen.format(value)}円`;
@@ -889,6 +923,10 @@
       renderRows();
     });
 
+    document.querySelector("#saveInputs").addEventListener("click", (event) => {
+      saveInputs(event.currentTarget);
+    });
+
     document.querySelector("#copyAmounts").addEventListener("click", (event) => {
       copyText(getAmountText(), event.currentTarget);
     });
@@ -901,11 +939,12 @@
       node.addEventListener("input", calculate);
     });
 
+    loadSavedInputs();
     renderRows();
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=4").catch(() => {});
       });
     }
   </script>
