@@ -157,6 +157,57 @@
         var(--panel);
     }
 
+    .advanced {
+      margin-bottom: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .advanced summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 15px 18px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(180deg, #ffffff, var(--panel-soft));
+    }
+
+    .advanced summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .advanced summary::after {
+      content: "+";
+      color: var(--accent);
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .advanced[open] summary::after {
+      content: "-";
+    }
+
+    .advanced-body {
+      padding: 18px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 16px;
+    }
+
+    .advanced-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
     .field-wide {
       grid-column: 1 / -1;
     }
@@ -391,8 +442,7 @@
     }
 
     .role-grid {
-      padding: 18px;
-      margin-top: 16px;
+      padding: 0;
       background:
         linear-gradient(180deg, rgba(255, 246, 232, 0.42), rgba(255, 255, 255, 0.96)),
         var(--panel);
@@ -455,6 +505,7 @@
       }
 
       .settings,
+      .advanced-controls,
       .role-controls,
       .summary {
         grid-template-columns: 1fr;
@@ -469,7 +520,7 @@
       }
 
       .settings,
-      .role-grid,
+      .advanced-body,
       .result {
         padding: 14px;
       }
@@ -501,27 +552,65 @@
             <input id="total" type="number" min="0" step="1" value="33150">
           </label>
           <label>
-            丸め単位
-            <select id="roundUnit">
-              <option value="10">10円</option>
-              <option value="50" selected>50円</option>
-              <option value="100">100円</option>
-              <option value="500">500円</option>
-            </select>
-          </label>
-          <label>
-            遅参加係数
-            <input id="lateRate" type="number" min="0.1" step="0.05" value="0.7">
-          </label>
-          <label>
-            件名
-            <input id="subject" type="text" value="【精算】飲み会代金のご連絡">
-          </label>
-          <label class="field-wide">
             送金先
             <textarea id="transferTo" class="transfer-input" placeholder="例：PayPay / 銀行口座など"></textarea>
           </label>
         </section>
+
+        <details class="advanced">
+          <summary>詳細設定はこちら</summary>
+          <div class="advanced-body">
+            <div class="advanced-controls">
+              <label>
+                丸め単位
+                <select id="roundUnit">
+                  <option value="10">10円</option>
+                  <option value="50" selected>50円</option>
+                  <option value="100">100円</option>
+                  <option value="500">500円</option>
+                </select>
+              </label>
+              <label>
+                遅参加係数
+                <input id="lateRate" type="number" min="0.1" step="0.05" value="0.7">
+              </label>
+            </div>
+
+            <div class="role-grid" aria-label="役職ごとの重み">
+              <h2>役職の重み</h2>
+              <div class="role-controls">
+                <label>
+                  事業部長
+                  <input class="role-weight" data-role="事業部長" type="number" min="0" step="0.1" value="1.9">
+                </label>
+                <label>
+                  統括部長
+                  <input class="role-weight" data-role="統括部長" type="number" min="0" step="0.1" value="1.75">
+                </label>
+                <label>
+                  部長
+                  <input class="role-weight" data-role="部長" type="number" min="0" step="0.1" value="1.6">
+                </label>
+                <label>
+                  課長
+                  <input class="role-weight" data-role="課長" type="number" min="0" step="0.1" value="1.45">
+                </label>
+                <label>
+                  課長代理
+                  <input class="role-weight" data-role="課長代理" type="number" min="0" step="0.1" value="1.35">
+                </label>
+                <label>
+                  主任
+                  <input class="role-weight" data-role="主任" type="number" min="0" step="0.1" value="1.1">
+                </label>
+                <label>
+                  勤務
+                  <input class="role-weight" data-role="勤務" type="number" min="0" step="0.1" value="1">
+                </label>
+              </div>
+            </div>
+          </div>
+        </details>
 
         <section class="member-box" aria-label="メンバ入力">
           <div class="table-wrap">
@@ -544,39 +633,6 @@
           </div>
         </section>
 
-        <section class="role-grid" aria-label="役職ごとの重み">
-          <h2>役職の重み</h2>
-          <div class="role-controls">
-            <label>
-              事業部長
-              <input class="role-weight" data-role="事業部長" type="number" min="0" step="0.1" value="1.9">
-            </label>
-            <label>
-              統括部長
-              <input class="role-weight" data-role="統括部長" type="number" min="0" step="0.1" value="1.75">
-            </label>
-            <label>
-              部長
-              <input class="role-weight" data-role="部長" type="number" min="0" step="0.1" value="1.6">
-            </label>
-            <label>
-              課長
-              <input class="role-weight" data-role="課長" type="number" min="0" step="0.1" value="1.45">
-            </label>
-            <label>
-              課長代理
-              <input class="role-weight" data-role="課長代理" type="number" min="0" step="0.1" value="1.35">
-            </label>
-            <label>
-              主任
-              <input class="role-weight" data-role="主任" type="number" min="0" step="0.1" value="1.1">
-            </label>
-            <label>
-              勤務
-              <input class="role-weight" data-role="勤務" type="number" min="0" step="0.1" value="1">
-            </label>
-          </div>
-        </section>
       </div>
 
       <aside class="result" aria-label="計算結果">
@@ -640,7 +696,6 @@
       total: document.querySelector("#total"),
       roundUnit: document.querySelector("#roundUnit"),
       lateRate: document.querySelector("#lateRate"),
-      subject: document.querySelector("#subject"),
       transferTo: document.querySelector("#transferTo"),
       memberRows: document.querySelector("#memberRows"),
       resultRows: document.querySelector("#resultRows"),
@@ -839,11 +894,10 @@
     });
 
     document.querySelector("#copyMail").addEventListener("click", (event) => {
-      const text = `件名：${el.subject.value}\n\n${el.mailBody.value}`;
-      copyText(text, event.currentTarget);
+      copyText(el.mailBody.value, event.currentTarget);
     });
 
-    [el.total, el.roundUnit, el.lateRate, el.subject, el.transferTo, ...document.querySelectorAll(".role-weight")].forEach((node) => {
+    [el.total, el.roundUnit, el.lateRate, el.transferTo, ...document.querySelectorAll(".role-weight")].forEach((node) => {
       node.addEventListener("input", calculate);
     });
 
