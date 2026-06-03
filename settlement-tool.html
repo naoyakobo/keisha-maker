@@ -565,16 +565,17 @@
 
       .member-box tbody {
         display: grid;
-        gap: 12px;
-        padding: 12px;
+        gap: 8px;
+        padding: 10px;
       }
 
       .member-box tbody tr {
         display: grid;
-        gap: 10px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+        gap: 8px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 12px;
+        padding: 10px;
         background: #fff;
         box-shadow: var(--shadow-soft);
       }
@@ -586,26 +587,39 @@
       .member-box td {
         border-bottom: 0;
         padding: 0;
+        min-width: 0;
       }
 
       .member-box td::before {
         content: attr(data-label);
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
       }
 
+      .member-box td[data-label="メンバ"],
+      .member-box td[data-label="役職"] {
+        grid-column: span 1;
+      }
+
       .member-box td[data-label="遅参加"] {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 40px;
+        grid-column: span 1;
+      }
+
+      .member-box td[data-label="固定金額"] {
+        grid-column: span 1;
+      }
+
+      .member-box td[data-label="遅参加"] {
+        display: grid;
+        align-items: end;
+        min-height: 0;
       }
 
       .member-box td[data-label="遅参加"]::before {
-        margin-bottom: 0;
+        margin-bottom: 4px;
       }
 
       .member-box td[data-label="削除"]::before {
@@ -614,11 +628,30 @@
 
       .member-box td[data-label="削除"] {
         display: flex;
-        justify-content: flex-end;
+        align-items: end;
+        justify-content: center;
+        grid-column: span 1;
       }
 
       .member-box .check {
-        justify-content: flex-end;
+        justify-content: center;
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fbfdfe;
+      }
+
+      .member-box input,
+      .member-box select {
+        min-height: 34px;
+        padding: 6px 8px;
+        font-size: 13px;
+      }
+
+      .member-box .icon-btn {
+        width: 34px;
+        min-width: 34px;
+        min-height: 34px;
       }
 
       .table-footer {
@@ -1079,7 +1112,7 @@
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js?v=5").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=6").catch(() => {});
       });
     }
   </script>
