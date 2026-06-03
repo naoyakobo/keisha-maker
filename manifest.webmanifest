@@ -1,0 +1,19 @@
+{
+  "name": "傾斜メーカー",
+  "short_name": "傾斜メーカー",
+  "description": "飲み会代金の傾斜精算とメール文面を作成するツール",
+  "start_url": "./settlement-tool.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b766d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
