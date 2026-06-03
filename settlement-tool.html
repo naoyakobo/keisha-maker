@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>飲み会精算ツール</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --ink: #172026;
+      --muted: #65717a;
+      --line: #d8e0e6;
+      --panel: #ffffff;
+      --panel-soft: #f8fafb;
+      --accent: #0b766d;
+      --accent-strong: #075e57;
+      --accent-2: #b56b16;
+      --danger: #b42318;
+      --soft: #e7f4f1;
+      --soft-2: #fff6e8;
+      --shadow: 0 18px 46px rgba(23, 32, 38, 0.10);
+      --shadow-soft: 0 8px 24px rgba(23, 32, 38, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic", "Meiryo", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(244, 246, 248, 0.92) 34%, rgba(237, 242, 244, 0.94)),
+        linear-gradient(120deg, rgba(11, 118, 109, 0.10), transparent 34%),
+        linear-gradient(300deg, rgba(181, 107, 22, 0.09), transparent 38%),
+        var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      min-height: 38px;
+      font-weight: 700;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 38px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 2px 2px 0;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.15;
+      letter-spacing: 0;
+      color: #111827;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 680px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary {
+      background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+      color: #fff;
+      padding: 0 16px;
+      box-shadow: 0 10px 22px rgba(11, 118, 109, 0.24);
+    }
+
+    .secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+      padding: 0 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .secondary:hover {
+      border-color: #b8c7d2;
+      background: #fbfdfe;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(380px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    section,
+    aside {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .settings {
+      padding: 18px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+      background:
+        linear-gradient(180deg, rgba(248, 250, 251, 0.92), rgba(255, 255, 255, 0.98)),
+        var(--panel);
+    }
+
+    .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfdfe;
+      color: var(--ink);
+      min-height: 40px;
+      padding: 9px 11px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 3px solid rgba(11, 118, 109, 0.16);
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    .member-box {
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      background: #f4f7f9;
+      border-bottom-color: #cbd6de;
+    }
+
+    tbody tr {
+      background: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fbfcfd;
+    }
+
+    tbody tr:hover {
+      background: #f3fbf9;
+    }
+
+    td.name {
+      min-width: 120px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .icon-btn {
+      width: 40px;
+      min-width: 40px;
+      padding: 0;
+      border-color: var(--line);
+      background: #fff;
+      color: var(--muted);
+      display: inline-grid;
+      place-items: center;
+      box-shadow: none;
+    }
+
+    .icon-btn:hover {
+      color: var(--danger);
+      border-color: #efb7b0;
+      background: #fff8f7;
+    }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      flex-wrap: wrap;
+      background: var(--panel-soft);
+    }
+
+    .result {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 14px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 251, 0.96)),
+        var(--panel);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 11px;
+      background: #fff;
+      min-width: 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 19px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .metric.ok strong {
+      color: var(--accent);
+    }
+
+    .metric.warn strong {
+      color: var(--danger);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+      color: #1f2933;
+    }
+
+    .output-table {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+      background: #fff;
+    }
+
+    .output-table table {
+      min-width: 0;
+    }
+
+    .output-table td:last-child,
+    .output-table th:last-child {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+      line-height: 1.65;
+      white-space: pre;
+      font-size: 13px;
+    }
+
+    .transfer-input {
+      min-height: 104px;
+      max-height: 220px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #fff;
+    }
+
+    #mailBody {
+      min-height: 300px;
+      white-space: pre;
+      background: #fff;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      background: var(--soft);
+      border: 1px solid #cfe5df;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .role-grid {
+      padding: 18px;
+      margin-top: 16px;
+      background:
+        linear-gradient(180deg, rgba(255, 246, 232, 0.42), rgba(255, 255, 255, 0.96)),
+        var(--panel);
+    }
+
+    .role-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 940px) {
+      header,
+      .layout {
+        display: block;
+      }
+
+      header {
+        margin-bottom: 16px;
+      }
+
+      .actions {
+        justify-content: flex-start;
+        margin-top: 14px;
+      }
+
+      .settings {
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+      }
+
+      .result {
+        position: static;
+        margin-top: 14px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 18px, 1240px);
+        padding: 16px 0 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .lead {
+        font-size: 13px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+      }
+
+      .actions button {
+        width: 100%;
+      }
+
+      .settings,
+      .role-controls,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .settings {
+        gap: 10px;
+      }
+
+      table {
+        min-width: 640px;
+      }
+
+      .settings,
+      .role-grid,
+      .result {
+        padding: 14px;
+      }
+
+      #mailBody {
+        min-height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>飲み会精算ツール</h1>
+        <p class="lead">精算金額とメール文面をまとめて作成します。</p>
+      </div>
+      <div class="actions">
+        <button class="secondary" id="copyAmounts" type="button" title="メンバと金額をコピー">金額コピー</button>
+        <button class="primary" id="copyMail" type="button" title="メール文面をコピー">メールコピー</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div>
+        <section class="settings" aria-label="精算条件">
+          <label>
+            合計金額
+            <input id="total" type="number" min="0" step="1" value="33150">
+          </label>
+          <label>
+            丸め単位
+            <select id="roundUnit">
+              <option value="10">10円</option>
+              <option value="50" selected>50円</option>
+              <option value="100">100円</option>
+              <option value="500">500円</option>
+            </select>
+          </label>
+          <label>
+            遅参加係数
+            <input id="lateRate" type="number" min="0.1" step="0.05" value="0.7">
+          </label>
+          <label>
+            件名
+            <input id="subject" type="text" value="【精算】飲み会代金のご連絡">
+          </label>
+          <label class="field-wide">
+            送金先
+            <textarea id="transferTo" class="transfer-input" placeholder="例：PayPay / 銀行口座など"></textarea>
+          </label>
+        </section>
+
+        <section class="member-box" aria-label="メンバ入力">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>メンバ</th>
+                  <th>役職</th>
+                  <th>遅参加</th>
+                  <th>固定金額</th>
+                  <th>削除</th>
+                </tr>
+              </thead>
+              <tbody id="memberRows"></tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <button class="secondary" id="addMember" type="button">メンバ追加</button>
+            <span class="pill" id="calcStatus">計算済み</span>
+          </div>
+        </section>
+
+        <section class="role-grid" aria-label="役職ごとの重み">
+          <h2>役職の重み</h2>
+          <div class="role-controls">
+            <label>
+              事業部長
+              <input class="role-weight" data-role="事業部長" type="number" min="0" step="0.1" value="1.9">
+            </label>
+            <label>
+              統括部長
+              <input class="role-weight" data-role="統括部長" type="number" min="0" step="0.1" value="1.75">
+            </label>
+            <label>
+              部長
+              <input class="role-weight" data-role="部長" type="number" min="0" step="0.1" value="1.55">
+            </label>
+            <label>
+              課長
+              <input class="role-weight" data-role="課長" type="number" min="0" step="0.1" value="1.55">
+            </label>
+            <label>
+              課長代理
+              <input class="role-weight" data-role="課長代理" type="number" min="0" step="0.1" value="1.35">
+            </label>
+            <label>
+              主任
+              <input class="role-weight" data-role="主任" type="number" min="0" step="0.1" value="1.1">
+            </label>
+            <label>
+              勤務
+              <input class="role-weight" data-role="勤務" type="number" min="0" step="0.1" value="1">
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <aside class="result" aria-label="計算結果">
+        <div class="summary">
+          <div class="metric">
+            <span>合計</span>
+            <strong id="totalLabel">33,150円</strong>
+          </div>
+          <div class="metric ok" id="assignedMetric">
+            <span>割当</span>
+            <strong id="assignedLabel">33,150円</strong>
+          </div>
+          <div class="metric ok" id="diffMetric">
+            <span>差額</span>
+            <strong id="diffLabel">0円</strong>
+          </div>
+        </div>
+
+        <div>
+          <h2>精算金額</h2>
+          <div class="output-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>メンバ</th>
+                  <th>金額</th>
+                </tr>
+              </thead>
+              <tbody id="resultRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <label>
+          メール文面
+          <textarea id="mailBody" spellcheck="false"></textarea>
+        </label>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const roles = ["事業部長", "統括部長", "部長", "課長", "課長代理", "主任", "勤務"];
+    const defaultMembers = [
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" },
+      { name: "", role: "勤務", late: false, fixed: "" }
+    ];
+
+    const yen = new Intl.NumberFormat("ja-JP");
+    const state = {
+      members: structuredClone(defaultMembers)
+    };
+
+    const el = {
+      total: document.querySelector("#total"),
+      roundUnit: document.querySelector("#roundUnit"),
+      lateRate: document.querySelector("#lateRate"),
+      subject: document.querySelector("#subject"),
+      transferTo: document.querySelector("#transferTo"),
+      memberRows: document.querySelector("#memberRows"),
+      resultRows: document.querySelector("#resultRows"),
+      mailBody: document.querySelector("#mailBody"),
+      totalLabel: document.querySelector("#totalLabel"),
+      assignedLabel: document.querySelector("#assignedLabel"),
+      diffLabel: document.querySelector("#diffLabel"),
+      assignedMetric: document.querySelector("#assignedMetric"),
+      diffMetric: document.querySelector("#diffMetric"),
+      calcStatus: document.querySelector("#calcStatus")
+    };
+
+    function formatYen(value) {
+      return `${yen.format(value)}円`;
+    }
+
+    function getWeights() {
+      return Object.fromEntries(
+        [...document.querySelectorAll(".role-weight")].map((input) => [
+          input.dataset.role,
+          Number(input.value) || 0
+        ])
+      );
+    }
+
+    function roundTo(value, unit) {
+      return Math.round(value / unit) * unit;
+    }
+
+    function distributeRemainder(rows, diff, unit) {
+      const adjustable = rows.filter((row) => !row.fixed);
+      if (!adjustable.length || diff === 0) return diff;
+
+      const direction = Math.sign(diff);
+      let remaining = Math.abs(diff);
+      const ordered = [...adjustable].sort((a, b) => b.weight - a.weight || a.index - b.index);
+
+      while (remaining >= unit) {
+        for (const row of ordered) {
+          if (remaining < unit) break;
+          row.amount += direction * unit;
+          remaining -= unit;
+        }
+      }
+
+      if (remaining > 0) {
+        ordered[0].amount += direction * remaining;
+        remaining = 0;
+      }
+
+      return 0;
+    }
+
+    function calculate() {
+      const total = Number(el.total.value) || 0;
+      const roundUnit = Number(el.roundUnit.value) || 1;
+      const lateRate = Number(el.lateRate.value) || 1;
+      const weights = getWeights();
+
+      const rows = state.members
+        .map((member, index) => {
+          const fixedAmount = Number(member.fixed);
+          const fixed = member.fixed !== "" && Number.isFinite(fixedAmount);
+          const weight = (weights[member.role] || 1) * (member.late ? lateRate : 1);
+          return {
+            ...member,
+            index,
+            fixed,
+            weight,
+            amount: fixed ? fixedAmount : 0
+          };
+        })
+        .filter((row) => row.name.trim());
+
+      const fixedTotal = rows.reduce((sum, row) => sum + (row.fixed ? row.amount : 0), 0);
+      const adjustable = rows.filter((row) => !row.fixed);
+      const weightTotal = adjustable.reduce((sum, row) => sum + row.weight, 0);
+      const remaining = total - fixedTotal;
+
+      adjustable.forEach((row) => {
+        row.amount = weightTotal > 0 ? roundTo((remaining * row.weight) / weightTotal, roundUnit) : 0;
+      });
+
+      const assignedBefore = rows.reduce((sum, row) => sum + row.amount, 0);
+      const unresolvedDiff = distributeRemainder(rows, total - assignedBefore, roundUnit);
+      const assigned = rows.reduce((sum, row) => sum + row.amount, 0);
+      const diff = total - assigned;
+
+      renderResult(rows, total, assigned, diff || unresolvedDiff);
+    }
+
+    function renderRows() {
+      el.memberRows.innerHTML = "";
+      state.members.forEach((member, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="name"><input data-field="name" data-index="${index}" type="text" value="${member.name}"></td>
+          <td>
+            <select data-field="role" data-index="${index}">
+              ${roles.map((role) => `<option value="${role}" ${role === member.role ? "selected" : ""}>${role}</option>`).join("")}
+            </select>
+          </td>
+          <td><label class="check"><input data-field="late" data-index="${index}" type="checkbox" ${member.late ? "checked" : ""}></label></td>
+          <td><input data-field="fixed" data-index="${index}" type="number" min="0" step="1" value="${member.fixed}" placeholder="自動"></td>
+          <td><button class="icon-btn" data-remove="${index}" type="button" title="削除" aria-label="削除">×</button></td>
+        `;
+        el.memberRows.appendChild(tr);
+      });
+      calculate();
+    }
+
+    function renderResult(rows, total, assigned, diff) {
+      el.totalLabel.textContent = formatYen(total);
+      el.assignedLabel.textContent = formatYen(assigned);
+      el.diffLabel.textContent = formatYen(diff);
+      el.assignedMetric.className = `metric ${diff === 0 ? "ok" : "warn"}`;
+      el.diffMetric.className = `metric ${diff === 0 ? "ok" : "warn"}`;
+      el.calcStatus.textContent = diff === 0 ? "計算済み" : "差額あり";
+
+      el.resultRows.innerHTML = "";
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.name}</td><td>${formatYen(row.amount)}</td>`;
+        el.resultRows.appendChild(tr);
+      });
+
+      const lines = rows.map((row) => `${row.name}：${formatYen(row.amount)}`);
+      const transferTo = el.transferTo.value.trim() || "[送金先を入力してください]";
+      el.mailBody.value = [
+        "各位",
+        "",
+        "お疲れさまです。",
+        "飲み会代金の精算金額をご連絡します。",
+        "",
+        "【送金額】",
+        "",
+        ...lines,
+        "",
+        `計：${formatYen(assigned)}`,
+        "",
+        "【送金先】",
+        "以下でお願いします。",
+        transferTo,
+        "",
+        "お手数ですが、上記金額のご精算をお願いいたします。"
+      ].join("\n");
+    }
+
+    function getAmountText() {
+      return [...el.resultRows.querySelectorAll("tr")]
+        .map((tr) => [...tr.children].map((td) => td.textContent).join("\t"))
+        .join("\n");
+    }
+
+    async function copyText(text, button) {
+      await navigator.clipboard.writeText(text);
+      const original = button.textContent;
+      button.textContent = "コピー済み";
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1200);
+    }
+
+    el.memberRows.addEventListener("input", (event) => {
+      const target = event.target;
+      const index = Number(target.dataset.index);
+      const field = target.dataset.field;
+      if (!field || Number.isNaN(index)) return;
+      state.members[index][field] = target.type === "checkbox" ? target.checked : target.value;
+      calculate();
+    });
+
+    el.memberRows.addEventListener("change", (event) => {
+      const target = event.target;
+      const index = Number(target.dataset.index);
+      const field = target.dataset.field;
+      if (!field || Number.isNaN(index)) return;
+      state.members[index][field] = target.type === "checkbox" ? target.checked : target.value;
+      calculate();
+    });
+
+    el.memberRows.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove]");
+      if (!button) return;
+      state.members.splice(Number(button.dataset.remove), 1);
+      renderRows();
+    });
+
+    document.querySelector("#addMember").addEventListener("click", () => {
+      state.members.push({ name: "", role: "勤務", late: false, fixed: "" });
+      renderRows();
+    });
+
+    document.querySelector("#copyAmounts").addEventListener("click", (event) => {
+      copyText(getAmountText(), event.currentTarget);
+    });
+
+    document.querySelector("#copyMail").addEventListener("click", (event) => {
+      const text = `件名：${el.subject.value}\n\n${el.mailBody.value}`;
+      copyText(text, event.currentTarget);
+    });
+
+    [el.total, el.roundUnit, el.lateRate, el.subject, el.transferTo, ...document.querySelectorAll(".role-weight")].forEach((node) => {
+      node.addEventListener("input", calculate);
+    });
+
+    renderRows();
+  </script>
+</body>
+</html>
