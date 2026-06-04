@@ -1031,17 +1031,12 @@
         "精算についてですが、以下でお願いいたします。",
         "",
         "【送金額】",
-        "",
         ...lines,
         "",
         `計：${formatYen(assigned)}`,
         "",
-        "",
         "【送金先】",
-        "",
         transferTo,
-        "",
-        "",
         "",
         "以上、よろしくお願いいたします。"
       ].join("\n");
@@ -1117,7 +1112,7 @@
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js?v=7").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=8").catch(() => {});
       });
     }
   </script>
