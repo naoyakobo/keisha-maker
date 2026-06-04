@@ -1,4 +1,4 @@
-const CACHE_NAME = "keisha-maker-v7";
+const CACHE_NAME = "keisha-maker-v8";
 const ASSETS = [
   "./",
   "./index.html",
